@@ -1,0 +1,49 @@
+#login-frame {
+  width: 20%;
+  margin: auto;
+  background: #fff;
+  padding: 10%;
+  text-align: center;
+  font-size: 90%;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+#invalid {
+  color: red;
+  font-size: 13px;
+  text-align: center;
+}
+
+#user,
+#pwd {
+  padding: 1%;
+}
+
+#submit {
+  background: linear-gradient(to bottom, #44c767 5%, #5cbf2a 100%);
+  background-color: #44c767;
+  border-radius: 20px;
+  border: 1px solid #18ab29;
+  display: inline-block;
+  cursor: pointer;
+  color: #ffffff;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 15px;
+  padding: 10px 25px;
+  text-decoration: none;
+  text-shadow: 0px 1px 0px #2f6627;
+}
+
+#submit a:hover {
+  background: linear-gradient(to bottom, #5cbf2a 5%, #44c767 100%);
+  background-color: #5cbf2a;
+}
+
+#submit a.active {
+  position: relative;
+  top: 1px;
+}
+
+.textbox {
+  border-radius: 5px;
+}
