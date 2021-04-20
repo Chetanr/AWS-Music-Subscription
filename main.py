@@ -13,98 +13,38 @@
 # limitations under the License.
 
 
+# from http import client
+# from google.auth import app_engine
+from google.cloud import bigquery
 from flask import *
-from pprint import pprint
-import boto3
-from botocore.exceptions import ClientError
-
-
+from flask.helpers import url_for
+from google.auth.transport import requests
+from google.cloud import datastore, storage
+from google.cloud.storage import client
+import google.oauth2.id_token
 
 app = Flask(__name__)
 
+@app.route('/one')
+def one():
+    bigquery_client = bigquery.Client()
+    query = """
+        SELECT time_ref, value FROM `chetan-r-project2.task_2_1.task2_1` order by value desc LIMIT 10
+        """
+    result = bigquery_client.query(query)
+    return render_template('one.html', results = result)
 
-def check_login(user, password, dynamodb=None):
-    if not dynamodb:
-        dynamodb = boto3.resource('dynamodb')
-        table = dynamodb.Table('login')
-        try:
-            response = table.get_item(Key={'email': user})
-        except ClientError as e:
-            print(e.response['Error']['Message'])
-        else:
-            if 'Item' in response:
-                if(response['Item']['password'] == password):
-                    return True
-        return False
+@app.route('/two', methods = ['POST'])
+def two():
+    return "hi"
 
+@app.route('/three', methods = ['POST'])
+def three():
+    return "hi"
 
-@app.route('/logout')
-def logout():
-    session.clear() 
-    # app.logger.info(session['username']) 
-    return render_template('login.html')
-
-@app.route('/register_user', methods = ['POST'])
-def register_user():
-    if request.method == "POST":
-        username = request.form['user']
-        password = request.form['password']
-        email = request.form['email']
-        result = check_user(username, email)
-        if(result is True):
-            dynamodb = boto3.resource('dynamodb')
-            table = dynamodb.Table('login')
-            table.put_item(
-                Item = {
-                'email': email,
-                'user_name': username,
-                'password': password
-                }
-            )
-            return render_template('login.html')
-        return render_template('register.html', invalid = "The email already exists")
-
-
-def check_user(email):
-    dynamodb = boto3.resource('dynamodb')
-    table = dynamodb.Table('login')
-    try:
-        response1 = table.get_item(Key={'email': email})
-        # response2 = table.get_item(Key={'user_name': username})
-    except ClientError as e:
-        print(e.response['Error']['Message'])
-    else:
-        if 'Item' in response1:
-            return False
-    return True
-
-
-
-@app.route('/register')
-def register():
-    return render_template('register.html')
-
-
-
-@app.route('/login', methods = ['POST'])
-def login():
-    if request.method == 'POST':
-        username = request.form['user']
-        password = request.form['password']
-        result = check_login(username,password)
-        app.logger.info(result)
-        if (result is False):
-            session['username'] = username
-            session['password'] = password
-            return render_template('login.html', invalid = "email or password is invalid")
-        else:
-            return render_template('main_page.html')
-
-#starting point of the application
 @app.route('/')
 def root():
-    return render_template('login.html')
-
+    return render_template('index.html')
 
 
 if __name__ == '__main__':
