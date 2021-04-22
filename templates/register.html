@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+  <title>Register</title>
+
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  </head>
+
+  <body>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='login.css') }}"
+    />
+    <form
+      id="login-form"
+      method="POST"
+      action="{{ url_for('.register_user')  }}"
+    >
+      <br />
+      <br />
+      <br />
+      <div id="login-frame">
+        <div id="user">
+          <label for="Id">Email:</label>
+          <input type="text" name="email" class="textbox" />
+        </div>
+        <br />
+        <div id="user">
+          <label for="Username">Username:</label>
+          <input type="text" name="user" class="textbox" />
+        </div>
+        <br />
+        <div id="pwd">
+          <label for="Password">Password:</label>
+          <input type="password" name="password" class="textbox" />
+        </div>
+        <br />
+        <div>
+          <button type="submit" id="submit">Register</button>
+          <br />
+          <label id="invalid" name="invalid">{{invalid}}</label>
+        </div>
+      </div>
+    </form>
+  </body>
+</html>

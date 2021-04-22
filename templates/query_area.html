@@ -1,0 +1,64 @@
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='forum.css') }}"
+    />
+  </head>
+  <title>Dashboard</title>
+  <br />
+  <div>
+    <br />
+    <h4>Welcome {{user_name}}</h4>
+  </div>
+  <div class="header">
+    <form id="login-form" method="POST">
+      <a href="{{ url_for('.subscription') }}" id="customer">
+        Subscription Area
+      </a>
+      <span class="space"></span>
+      <a href="{{ url_for('.query_area') }}" id="changePassword">
+        Query Area
+      </a>
+      <span class="space"></span>
+      <a href="{{ url_for('.logout') }}" id="logout"> Logout </a>
+    </form>
+  </div>
+  <br />
+  <br />
+  <div>
+    <form id="login-form" method="POST" action="{{ url_for('.query_music') }}">
+      <label for="Password">Title:</label>
+      <input type="text" name="title" class="textbox" />
+      &nbsp &nbsp
+      <label for="Password">Year:</label>
+      <input type="text" name="year" class="textbox" />
+      &nbsp &nbsp
+      <label for="Password">Artist:</label>
+      <input type="text" name="artist" class="textbox" />
+      &nbsp &nbsp
+      <button type="submit" id="submit">Query</button>
+    </form>
+  </div>
+  <div>
+    <ul>
+      <!-- {% for post in posts %} -->
+      <br />
+      <li onclick="postDetail()">
+        <img
+          src="{{post['image']}}"
+          alt="image"
+          style="width: 80px; height: 80px"
+        />
+        <br />
+        <label><b>Title:</b> {{ posts['Item']['title']}}</label>
+        <br />
+        <label><b>Artist:</b> {{ posts['Item']['artist']}}</label>
+        <br />
+        <label><b>Year: </b> {{ posts['Item']['year']}}</label>
+      </li>
+      <!-- {% endfor %} -->
+    </ul>
+  </div>
+</html>

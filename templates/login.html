@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+  <title>Welcome</title>
+
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  </head>
+
+  <body>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='login.css') }}"
+    />
+    <form
+      id="login-form" method="POST" action = "{{ url_for('.login') }}"
+    >
+      <br />
+      <br />
+      <br />
+      <div id="login-frame">
+        <div id="user">
+          <label for="Username">Email:</label>
+          <input type="text" name="user" class="textbox"/>
+        </div>
+        <br />
+        <br />
+        <div id="pwd">
+          <label for="Password">Password:</label>
+          <input type="password" name="password" class="textbox" />
+        </div>
+        <br />
+        <br />
+        <div>
+          <button type="submit" id="submit">Login</button>
+        </form>
+          <br />
+          <a href="{{ url_for('.register') }}"> Register </a>
+          <br />
+          <br />
+          <label id="invalid" name="invalid">{{invalid}}</label>
+        </div>
+      </div>
+  </body>
+</html>

@@ -1,0 +1,28 @@
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='forum.css') }}"
+    />
+  </head>
+  <title>Dashboard</title>
+  <br />
+  <div>
+    <br />
+    <h4>Welcome {{user_name}}</h4>
+  </div>
+  <div class="header">
+    <form id="login-form" method="POST">
+      <a href="{{ url_for('.subscription') }}" id="customer" method="post">
+        Subscription Area
+      </a>
+      <span class="space"></span>
+      <a href="{{ url_for('.query_area') }}" id="changePassword">
+        Query Area
+      </a>
+      <span class="space"></span>
+      <a href="{{ url_for('.logout') }}" id="logout"> Logout </a>
+    </form>
+  </div>
+</html>
