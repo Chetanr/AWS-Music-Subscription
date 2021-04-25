@@ -1,29 +1,18 @@
-# Copyright 2018 Google LLC
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-
 from flask import *
 from pprint import pprint
 import boto3
+import json
+import requests
 from botocore.exceptions import ClientError
+from boto3.dynamodb.conditions import Key
 from decimal import Decimal
-
-
 
 app = Flask(__name__)
 
 app.secret_key = "0123456789"
+
+ACCESS_KEY = "AKIA4P2RQVNEEKZOL3BO"
+SECRET_KEY = "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"
 
 def check_login(user, password, dynamodb=None):
     if not dynamodb:
@@ -39,13 +28,57 @@ def check_login(user, password, dynamodb=None):
                     return response['Item']['user_name']
         return False
 
+
 @app.route('/subscription')
 def subscription():
-    return "subscription"
+    dynamodb = boto3.resource('dynamodb')
+    table = dynamodb.Table('subscriptions')
+    response= query_subscription_db(table)
+    if 'Items' in response:
+        return render_template('my_subscriptions.html', posts = response, user_name = session['username'])
+    else:
+        return render_template('my_subscriptions.html', posts = '', user_name = session['username'])
+
+@app.route('/remove', methods = ['POST'])
+def remove():
+    if request.method == 'POST':
+        username = session['username']
+        title = request.form['title']
+        dynamodb = boto3.resource('dynamodb')
+        table = dynamodb.Table('subscriptions')  
+        try:
+            response = table.delete_item(
+                Key={
+                    'user_name': username,
+                    'title': title
+                },
+            )
+        except ClientError as e:
+            if e.response['Error']['Code'] == "ConditionalCheckFailedException":
+                print(e.response['Error']['Message'])
+            else:
+                raise
+        else:
+            response= query_subscription_db(table)
+            if 'Items' in response:
+                return render_template('my_subscriptions.html', posts = response, user_name = session['username'])
+            else:
+                return render_template('my_subscriptions.html', posts = '', user_name = session['username'])
+
+def query_subscription_db(table):
+    response = table.query(
+        KeyConditionExpression=Key('user_name').eq(session['username'])
+    )
+    return response
+
 
 @app.route('/query_area')
 def query_area():
-    return render_template('query_area.html', user_name = session['username'])
+    return render_template('query_area.html', user_name = session['username'], posts = '')
+
+@app.route('/back')
+def back():
+    return render_template('main_page.html', user_name = session['username'])
 
 @app.route('/query_music', methods = ['POST'])
 def query_music():
@@ -55,17 +88,43 @@ def query_music():
         artist = request.form['artist']
         dynamodb = boto3.resource('dynamodb')
         table = dynamodb.Table('music')
-        response = table.get_item(Key={'title': title, 'artist' : artist})
+        try:
+            response = table.get_item(Key={'title': title, 'artist' : artist})
+        except ClientError as e:
+            return render_template('query_area.html', posts = '',user_name = session['username'])
         if 'Item' in response:
-            return render_template('query_area.html', posts = response)
-            return response['Item']
-    return response
+            return render_template('query_area.html', posts = response,user_name = session['username'])
+        else:
+            return render_template('query_area.html', posts = '', user_name = session['username'])
 
+
+@app.route('/subscribe', methods = ['POST'])
+def subscribe():
+    if request.method == "POST":
+        title = request.form['title']
+        artist = request.form['artist']
+        year = request.form['year']
+        # app.logger.info(title)
+        # app.logger.info(artist)
+        # app.logger.info(year)
+        dynamodb = boto3.resource('dynamodb')
+        table = dynamodb.Table('subscriptions')
+        table.put_item(
+            Item = {
+            'title': title,
+            'user_name': session['username'],
+            'artist': artist,
+            'year': year
+        })
+        response = query_subscription_db(table)
+        if 'Items' in response:
+            return render_template('my_subscriptions.html', posts = response, user_name = session['username'])
+        else:
+            return render_template('query_ares.html', posts = '', user_name = session['username'])
 
 @app.route('/logout')
 def logout():
-    session.clear() 
-    # app.logger.info(session['username']) 
+    session.clear()  
     return render_template('login.html')
 
 @app.route('/register_user', methods = ['POST'])
@@ -74,7 +133,7 @@ def register_user():
         username = request.form['user']
         password = request.form['password']
         email = request.form['email']
-        result = check_user(username, email)
+        result = check_user(email)
         if(result is True):
             dynamodb = boto3.resource('dynamodb')
             table = dynamodb.Table('login')
@@ -123,16 +182,21 @@ def create_music_database():
 def load_music_data():
     with open("a2.json") as json_file:
         music_list = json.load(json_file, parse_float=Decimal)
-    dynamodb = boto3.resource('dynamodb')
+    dynamodb = boto3.resource('dynamodb', region_name="us-east-1")
     table = dynamodb.Table('music')
     for music in music_list['songs']:
-        app.logger.info(music['title'])
-        # app.logger.info(music['artist'])
-        # app.logger.info(music['year'])
-        # app.logger.info(music['web_url'])
-        # app.logger.info(music['image_url'])
+        upload_bucket(music['img_url'])
         table.put_item(Item=music)
     return table
+
+def upload_bucket(url):
+    r = requests.get(url, stream=True)
+    session = boto3.Session()
+    s3 = session.resource('s3')
+    bucket_name = 's3793263-bucket'
+    bucket = s3.Bucket(bucket_name)
+    key = url
+    bucket.upload_fileobj(r.raw, key)
 
 def check_user(email):
     dynamodb = boto3.resource('dynamodb')
@@ -165,8 +229,8 @@ def login():
             return render_template('login.html', invalid = "email or password is invalid")
         else:
             # temp = create_music_database()
-            # app.logger.info(temp)
-            # temp = load_music_data()
+            # time.sleep(5)
+            # temp2 = load_music_data()
             # app.logger.info(temp)
             session['username'] = result
             app.logger.info(session['username'])
