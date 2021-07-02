@@ -11,8 +11,8 @@ app = Flask(__name__)
 
 app.secret_key = "0123456789"
 
-ACCESS_KEY = "AKIA4P2RQVNEEKZOL3BO"
-SECRET_KEY = "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"
+ACCESS_KEY = "ACCESS_KEY"
+SECRET_KEY = "SECRET_KEY"
 
 def check_login(user, password, dynamodb=None):
     if not dynamodb:
